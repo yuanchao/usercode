@@ -13,11 +13,11 @@
 //
 // Original Author:  Yuan CHAO
 //         Created:  Apr. 2008
-// $Id$
+// $Id: JetRejMVAEval.cc,v 1.1 2008/04/30 13:04:05 yuanchao Exp $
 //
 //
 
-#include "PhysicsTools/JetRejectorTool/interface/JetRejMVA.h"
+#include "PhysicsTools/JetRejectorTool/interface/JetRejMVAEval.h"
 
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
 
