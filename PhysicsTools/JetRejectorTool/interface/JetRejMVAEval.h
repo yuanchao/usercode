@@ -1,5 +1,5 @@
-// Original Author:  Ilaria Villella
-//         Created:  Thu 12 Apr 2007
+// Original Author:  Yuan CHAO
+//         Created:  Apr 2008
 
 // system include files
 #include <memory>
