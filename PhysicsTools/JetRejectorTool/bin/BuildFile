@@ -5,9 +5,6 @@
  <use name=FWCore/Framework>
  <use name=rootcintex>
  <use name=root>
- <bin file="JetRejCombLR_SoverSplusBLoop_parton.cpp"> </bin>
- <bin file="JetRejCombLR_SoverSplusBLoop_genjet.cpp"> </bin>
- <bin file="JetRejCombLR_SoverSplusBLoop_partonjet.cpp"> </bin>
 
 <library file=JetRejMVATrainer.cc name=JetRejMVATrainer>
   <use name=Foundation/PluginManager>
