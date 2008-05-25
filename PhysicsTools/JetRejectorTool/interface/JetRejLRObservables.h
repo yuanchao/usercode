@@ -23,8 +23,8 @@
 #include "DataFormats/BTauReco/interface/JetTracksAssociation.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/Common/interface/RefVector.h"
-#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
 
 
 using namespace std;

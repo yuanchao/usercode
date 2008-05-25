@@ -39,9 +39,9 @@
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/Common/interface/RefVector.h"
 #include "PhysicsTools/JetRejectorTool/interface/JetRejLRObservables.h"
-#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
-#include "TopQuarkAnalysis/TopTools/interface/LRHelpFunctions.h"
+//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+//#include "TopQuarkAnalysis/TopTools/interface/LRHelpFunctions.h"
 
 #include "PhysicsTools/MVAComputer/interface/MVAComputerCache.h"
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
@@ -87,7 +87,7 @@ class JetRejMVAEval : public edm::EDProducer {
       TString  JetCombOutFileName ;
       TString  JetCombPSfile ;
       vector<int> obsNrs;   
-      LRHelpFunctions *myLRhelper; 
+//      LRHelpFunctions *myLRhelper; 
 
       //TFile *outputRootFile;
 	MVAComputerCache	mvaComputer;

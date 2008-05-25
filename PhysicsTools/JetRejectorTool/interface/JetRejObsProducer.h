@@ -43,9 +43,9 @@
 #include "DataFormats/Common/interface/RefVector.h"
 #include "DataFormats/Candidate/interface/CandMatchMap.h"
 #include "PhysicsTools/JetRejectorTool/interface/JetRejLRObservables.h"
-#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
-#include "TopQuarkAnalysis/TopTools/interface/JetPartonMatching.h"
+//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+//#include "TopQuarkAnalysis/TopTools/interface/JetPartonMatching.h"
 
 using namespace edm;
 using namespace std;

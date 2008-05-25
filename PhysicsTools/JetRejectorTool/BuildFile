@@ -9,8 +9,8 @@
 <use name=CondCore/PluginSystem>
 <use name=DataFormats/Common>
 
-<use name=TopQuarkAnalysis/TopTools>
-<use name=AnalysisDataFormats/TopObjects>
+#<use name=TopQuarkAnalysis/TopTools>
+#<use name=AnalysisDataFormats/TopObjects>
 <use name=DataFormats/BTauReco>
 #<flags SEAL_PLUGIN_NAME="PhysicsToolsJetRejectorTool">
 <flags EDM_PLUGIN=1>
@@ -20,7 +20,7 @@
    <use name=FWCore/PluginManager>
    <use name=FWCore/ParameterSet>
 
-   <use name=TopQuarkAnalysis/TopTools>
-   <use name=AnalysisDataFormats/TopObjects>
+#   <use name=TopQuarkAnalysis/TopTools>
+#   <use name=AnalysisDataFormats/TopObjects>
 </export>
 
