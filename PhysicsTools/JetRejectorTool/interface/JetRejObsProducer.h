@@ -43,9 +43,11 @@
 #include "DataFormats/Common/interface/RefVector.h"
 #include "DataFormats/Candidate/interface/CandMatchMap.h"
 #include "PhysicsTools/JetRejectorTool/interface/JetRejLRObservables.h"
-//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
 //#include "TopQuarkAnalysis/TopTools/interface/JetPartonMatching.h"
+
+#include "DataFormats/Common/interface/ValueMap.h"
 
 using namespace edm;
 using namespace std;
@@ -61,11 +63,9 @@ class JetRejObsProducer : public edm::EDProducer {
       ~JetRejObsProducer();
       void produce(edm::Event&, const edm::EventSetup&);
       
-   
+      typedef edm::ValueMap<JetRejObs> JetRejObsMap;
     
    private:
-      // std::vector<reco::CaloJet>  CaloJetSelected;
-      // std::vector<reco::JetTag>  JetTagSelected;
       edm::InputTag selgenjetsrc_;
       edm::InputTag selcalojetsrc_;
       edm::InputTag seljettagsrc_;

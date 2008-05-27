@@ -23,8 +23,8 @@
 #include "DataFormats/BTauReco/interface/JetTracksAssociation.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/Common/interface/RefVector.h"
-//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
 
 
 using namespace std;
@@ -37,7 +37,6 @@ class JetRejLRObservables {
     JetRejLRObservables();
     ~JetRejLRObservables();	
 
-    //    vector<pair<int, double> >  operator()(JetPartonMatch&, edm::Handle<vector<reco::Vertex> >, edm::Handle<vector<reco::JetTag> >);
     JetRejObs  operator()(reco::CaloJet&, edm::Handle<vector<reco::Vertex> >, edm::Handle<vector<reco::JetTag> >, double);
     double DeltaRJP(double, double, double, double );
   private:

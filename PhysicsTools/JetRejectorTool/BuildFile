@@ -8,19 +8,25 @@
 <use name=PhysicsTools/MVAComputer>
 <use name=CondCore/PluginSystem>
 <use name=DataFormats/Common>
-
+<use name=clhep>
+<use name=rootrflx>
+<use name=root>
+<use name=rootcore>
 #<use name=TopQuarkAnalysis/TopTools>
-#<use name=AnalysisDataFormats/TopObjects>
+<use name=AnalysisDataFormats/TopObjects>
 <use name=DataFormats/BTauReco>
-#<flags SEAL_PLUGIN_NAME="PhysicsToolsJetRejectorTool">
+
 <flags EDM_PLUGIN=1>
 <export>
    <lib name=PhysicsToolJetRejectorTool>
    <use name=FWCore/Framework>
    <use name=FWCore/PluginManager>
    <use name=FWCore/ParameterSet>
-
+   <use name=clhep>
+   <use name=rootrflx>
+   <use name=root>
+   <use name=rootcore>
 #   <use name=TopQuarkAnalysis/TopTools>
-#   <use name=AnalysisDataFormats/TopObjects>
+   <use name=AnalysisDataFormats/TopObjects>
 </export>
 

@@ -15,9 +15,14 @@
 #include "DataFormats/Common/interface/RefVector.h"
 #include "DataFormats/Candidate/interface/CandMatchMap.h"
 #include "PhysicsTools/JetRejectorTool/interface/JetRejLRObservables.h"
-//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
+#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
 //#include "TopQuarkAnalysis/TopTools/interface/JetPartonMatching.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejMVAEval.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejObsProducer.h"
+#include "DataFormats/Common/interface/Association.h"
+#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -79,7 +84,8 @@ class JetRejMVATrainer : public edm::EDAnalyzer {
 
 	virtual void analyze(const edm::Event& iEvent,
 	                     const edm::EventSetup& iSetup);
-
+ 
+        typedef edm::ValueMap<JetRejObs> JetRejObsMap;
     private:
         edm::InputTag obssrc_;
 
@@ -131,39 +137,50 @@ void JetRejMVATrainer::analyze(const edm::Event& iEvent,
   if (!mvaComputer)
     return;
   
-  Handle<vector<JetRejObs> > observables;
+  Handle<JetRejObsMap> observables;
   iEvent.getByLabel(obssrc_, observables); 
 
   
   bool target=false;
   Variable::Value values[MAX_OBSERV];
 
-  //Loop over all jet observable entries
-  for(unsigned int i_obs=0; i_obs < observables->size(); i_obs++){
-    int m_os=0;
-    
-    JetRejObs obsValue=(*observables)[i_obs];
+//  Handle<View<Jet> > jets;
+//  Handle<vector<reco::CaloJet> > jets;
+  Handle<View<reco::CaloJet> > jets;
+  iEvent.getByLabel( "seljets", jets);
 
-    //Loop over all observables of a jet
-    for(unsigned int i_val=0; i_val<obsValue.getSize(); i_val++){
+  //reco::GenJet::const_iterator thisjet = jets->begin();
+  View<reco::CaloJet> thisjet = (*jets);
+
+  //Loop over all jet observable entries
+  //for(unsigned int i_jet=0; i_jet != jets->size(); ++ i_jet, ++thisjet) {
+  //for(unsigned int i_jet=0; i_jet < thisjet.size(); ++ i_jet) {
+  for(View<CaloJet>::const_iterator i_jet = jets->begin();
+      i_jet != jets->end(); ++i_jet) {
+  // compute the match for i-th jet, store the index in genParticles collection
+
+      RefToBase<CaloJet> thisjetref = jets->refAt(i_jet - jets->begin());//refAt(i_jet);
+      JetRejObs obsValue = (*observables)[thisjetref]; // vector of observables for each jet!
+
+      for(unsigned int i_val=0; i_val<obsValue.getSize(); i_val++){
 
       //Observable '0' is for matched/unmatched jet
       if(obsValue.getPair(i_val).first == 0 ){
 	target = obsValue.getPair(i_val).second == 1;
-	values[m_os++]=Variable::Value(MVATrainer::kTargetId, target);
+	values[0]=Variable::Value(MVATrainer::kTargetId, target);
       }
       
       for(unsigned int i_os=0; i_os<JetSelObs_.size(); i_os++){
       	if(obsValue.getPair(i_val).first == JetSelObs_[i_os]){
-	  values[m_os++]=Variable::Value(ObsIds[JetSelObs_[i_os]],
+	  values[i_os+1]=Variable::Value(ObsIds[JetSelObs_[i_os]],
 					 obsValue.getPair(i_val).second);
 	}
       }
     }
     
-    mvaComputer->eval(values, values + m_os);
+    mvaComputer->eval(values, values + obsValue.getSize());
 	// arguments are begin() and end() (for plain C++ arrays done this way)
-	// std::vector also works, but plain array has better performance
+	// Std::vector also works, but plain array has better performance
 	// for fixed-size arrays (no internal malloc/free)
 
 	// mvaComputer->eval() can be called as many times per event as needed

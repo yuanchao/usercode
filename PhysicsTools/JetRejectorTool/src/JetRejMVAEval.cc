@@ -8,16 +8,20 @@
  Description: MVA implementation for Ilaria's JetRejectorTool
 
  Implementation:
-     Using MVA Tool
+     Using MVA Toolproducer
 */
 //
 // Original Author:  Yuan CHAO
 //         Created:  Apr. 2008
-// $Id: JetRejMVAEval.cc,v 1.1 2008/04/30 13:04:05 yuanchao Exp $
+// $Id: JetRejMVAEval.cc,v 1.2 2008/05/07 13:09:51 yuanchao Exp $
 //
 //
 
 #include "PhysicsTools/JetRejectorTool/interface/JetRejMVAEval.h"
+#include "PhysicsTools/JetRejectorTool/interface/JetRejObsProducer.h"
+#include "DataFormats/Common/interface/Association.h"
+#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
 
@@ -26,7 +30,7 @@
 //
 
 static const AtomicId ObsIds[17] = {
-        "obs0",
+        "target",
         "obs1",
         "obs2",
         "obs3",
@@ -46,7 +50,8 @@ static const AtomicId ObsIds[17] = {
 };
 
 JetRejMVAEval::JetRejMVAEval(const edm::ParameterSet& iConfig){
-  obssrc_ = iConfig.getParameter<edm::InputTag>( "obssrc" );  
+  obssrc_ = iConfig.getParameter<edm::InputTag>( "obssrc" );
+  selcalojetsrc_ = iConfig.getParameter<edm::InputTag>( "selcalojetsrc" );
   JetSelObs_ = iConfig.getUntrackedParameter< vector<int> > ( "JetSelObs"); 
  
   for(unsigned int j = 0; j < JetSelObs_.size(); j++){
@@ -56,6 +61,7 @@ JetRejMVAEval::JetRejMVAEval(const edm::ParameterSet& iConfig){
   ///-----------------------------------------------------------------
 
   //produces<  vector< double > >(); 
+  produces< JetRejMap >(); 
 }
 
 // destructor
@@ -66,9 +72,13 @@ JetRejMVAEval::~JetRejMVAEval()
 
 void JetRejMVAEval::produce( edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  std::vector <double >  *myObs = new std::vector <double> ;
+  //std::vector <double >  *myObs = new std::vector <double> ;
 
-  Handle<vector<JetRejObs> > observables;
+  //read in jets, use jets to access JetRejObsMap:
+  Handle<View<reco::CaloJet> > jets; 
+  iEvent.getByLabel( selcalojetsrc_, jets); 
+
+  Handle<JetRejObsProducer::JetRejObsMap> observables;
   iEvent.getByLabel(obssrc_, observables); 
 
   // update the cached MVAComputer from calibrations
@@ -76,45 +86,52 @@ void JetRejMVAEval::produce( edm::Event& iEvent, const edm::EventSetup& iSetup)
   // you can use a MVAComputerContainer to pass around
   // multiple different MVA's in one event setup record
   // identify the right one by a definable name string
-  mvaComputer.update<MVAJRRcd>(iSetup, "testMVA");
+  mvaComputer.update<MVAJetRejRcd>(iSetup, "JetRejMVA");
 
   JetRejObs obsValue;
-  double myJet= -1;
-  double logLR;
+//  double myJet= -1;
+//  double logLR;
   // get observable values
   vector<double> obsVals;
   
-  Variable::Value values[6];
+  Variable::Value values[32];
 
-  for(unsigned int i_obs=0; i_obs < observables->size(); i_obs++){
+  // create map passing the handle to the matched collection
+  std::auto_ptr<JetRejMap> jetmva(new JetRejMap);
 
-    int m_os=0;
-    bool target=0;
+  JetRejMap::Filler filler(*jetmva);
+  {
+    size_t n = jets->size();
+    std::vector<double> mva(n);
+    
+    //View<CaloJet>::const_iterator thisjet = jets->begin();
+    View<reco::CaloJet> thisjet = (*jets);
 
-    JetRejObs obsValue=(*observables)[i_obs];
-    for(unsigned int i_val=0; i_val<obsValue.getSize(); i_val++){
-      if(obsValue.getPair(i_val).first == 0 )
-	target = obsValue.getPair(i_val).second;
+    //for(unsigned int i_jet=0; i_jet != jets->size(); ++ i_jet, ++thisjet) {
+    for(View<CaloJet>::const_iterator i_jet = jets->begin();
+        i_jet != jets->end(); ++i_jet) {
+      // compute the match for i-th jet, store the index in genParticles collection
 
-      for(unsigned int i_os=0; i_os<JetSelObs_.size(); i_os++){
-        if(obsValue.getPair(i_val).first == JetSelObs_[i_os]){
-          values[m_os++]=Variable::Value(ObsIds[JetSelObs_[i_os]],
-                                         obsValue.getPair(i_val).second);
-        }
+      RefToBase<CaloJet> thisjetref = jets->refAt(i_jet - jets->begin());
+      obsValue = (*observables)[thisjetref]; // vector of observables for each jet!
+
+      for(unsigned int i_os=0; i_os<obsValue.getSize(); i_os++){
+        values[i_os]=Variable::Value(ObsIds[i_os],
+	                             obsValue.getPair(i_os).second);
       }
+
+      double result = mvaComputer->eval(values +1, values + obsValue.getSize());
+      
+      mva[i_jet - jets->begin()]=result;
     }
     
-    double result = mvaComputer->eval(values, values + m_os);
-
-    myObs->push_back( result );
-    //std::cout << "mva.eval(x = 1.0, y = 1.5) = " << result <<
-    //", \t" << target << std::endl;
+    filler.insert(jets, mva.begin(), mva.end());
   }
   
-  //---------------------------------
-  
-  std::auto_ptr<std::vector< double > > pOut(myObs);
-  iEvent.put( pOut );
+  // really fill the association map
+  filler.fill();
+  // put into the event
+  iEvent.put( jetmva );
   ///-----------------------
   
 }
@@ -124,7 +141,7 @@ void JetRejMVAEval::produce( edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // define the plugins for the record
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
-MVA_COMPUTER_CONTAINER_IMPLEMENT(MVAJR);
+MVA_COMPUTER_CONTAINER_IMPLEMENT(MVAJetRej);
 // this will implictly define an EDM es_source named "MVADemoFileSource"
 // which will allow to read the calibration from file into the EventSetup
 // note that for CondDB the PoolDBESSource can be used instead

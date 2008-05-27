@@ -39,14 +39,15 @@
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/Common/interface/RefVector.h"
 #include "PhysicsTools/JetRejectorTool/interface/JetRejLRObservables.h"
-//#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
-#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
-//#include "TopQuarkAnalysis/TopTools/interface/LRHelpFunctions.h"
+#include "AnalysisDataFormats/TopObjects/interface/JetRejObs.h"
+//#include "PhysicsTools/JetRejectorTool/interface/JetRejObs.h"
 
 #include "PhysicsTools/MVAComputer/interface/MVAComputerCache.h"
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
 
-MVA_COMPUTER_CONTAINER_DEFINE(MVAJR);
+#include "DataFormats/Common/interface/ValueMap.h"
+
+MVA_COMPUTER_CONTAINER_DEFINE(MVAJetRej);
 
 using namespace edm;
 using namespace std;
@@ -64,12 +65,13 @@ class JetRejMVAEval : public edm::EDProducer {
       ~JetRejMVAEval();
       void produce(edm::Event&, const edm::EventSetup&);
       
-   
+      typedef edm::ValueMap<double> JetRejMap;
     
    private:
       // std::vector<reco::CaloJet>  CaloJetSelected;
       // std::vector<reco::JetTag>  JetTagSelected;
       edm::InputTag obssrc_;
+      edm::InputTag selcalojetsrc_;
 
       double  DeltaRcut_;
       vector< int > JetSelObs_;
