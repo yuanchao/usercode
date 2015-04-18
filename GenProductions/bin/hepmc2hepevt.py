@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 #
 # Yuan CHAO     20015/04/09
 
@@ -101,19 +103,19 @@ class HepParticle:
 #                                                               str(self.mo),
 #                                                               str(self.da))
 #        m_str = "{:5d} {:5d} {:5d} {:5d} {:5d} {:5d} {:5d}".format(self.order,
-        m_str = "{:5d} {:5d} {:5d} {:5d} {:5d} {:5d}".format(self.status,
+        m_str = "{0:5d} {1:5d} {2:5d} {3:5d} {4:5d} {5:5d}".format(self.status,
                                                              self.pdgid,
                                                              self.mo[0],
                                                              self.mo[-1],
                                                              self.da[0],
                                                              self.da[-1])
         for i in self.p4 :
-            m_str = m_str + " {:15e}".format(i)
+            m_str = m_str + " {0:15e}".format(i)
 
-        m_str = m_str + " {:15e}".format(self.mass)
+        m_str = m_str + " {0:15e}".format(self.mass)
 
         for i in self.v4 :
-            m_str = m_str + " {:15e}".format(i)
+            m_str = m_str + " {0:15e}".format(i)
 
         return m_str
 
@@ -216,8 +218,12 @@ if __name__ == "__main__":
             particle_dict.clear()
             vertex_dict.clear()
 
+            if (n_events % 1000) == 0 :
+                sys.stdout.write('.')
+                sys.stdout.flush()
+
             if in_line == "": 
-                print '\nTotal '+str(n_events)+' processed.'
+                print '\nTotal '+str(n_events-1)+' processed.'
                 break
 
         if in_line[0:2] == 'V ':
