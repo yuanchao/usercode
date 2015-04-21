@@ -76,6 +76,7 @@ def prepareJobForEvents (tag, i, folderName, EOSfolder) :
 
     f = open (filename, 'a')
     f.write ('cp -p ' + rootfolder + '/' + folderName + '/powheg.input ./' + '\n')
+    f.write ('cp -p ' + rootfolder + '/' + folderName + '/JHUGen.input ./' + '\n')
     f.write ('cp -p ' + rootfolder + '/' + folderName + '/*.dat  ./' + '\n')
 
     f.write ('cd -' + '\n')
@@ -183,13 +184,15 @@ def runGetSource(parstage, xgrid, folderName, powInputName, process) :
 
     f.write('export name='+folderName+'\n\n')
 #    f.write('set process='+rootfolder+'\n\n')
-    f.write('export cardInput=powheg.input\n\n')
+    f.write('export cardInput='+powInputName+'\n\n')
     f.write('export process='+process+'\n\n')
     f.write(
 '''
 # Release to be used to define the environment and the compiler needed
 export RELEASE=${CMSSW_VERSION}
 export WORKDIR=`pwd`
+export jhugenversion="v5.2.5"
+
 
 # initialize the CMS environment 
 
@@ -211,6 +214,9 @@ export PATH=`pwd`:${PATH}
 
 ## Get the input card
 #wget --no-check-certificate http://cms-project-generators.web.cern.ch/cms-project-generators/${cardinput} -O powheg.input  || cp -p ${cardinput} powheg.input || fail_exit "Failed to get powheg input card " ${card}
+
+cp -p ../${cardInput} powheg.input
+cp -p ../JHUGen.input JHUGen.input
 
 mv powheg.input powheg.input.temp
 cat powheg.input.temp | sed -e "s#--#-#g" > powheg.input
@@ -354,9 +360,9 @@ if [ -e  ${WORKDIR}/cteq6m ]; then
     cp -p ${WORKDIR}/cteq6m .
 fi 
 
-rm -f ${WORKDIR}/${name}/powheg.input
+#rm -f ${WORKDIR}/${name}/powheg.input
+#cat ${card} | sed -e "s#SEED#${seed}#g" | sed -e "s#NEVENTS#${nevt}#g" > powheg.input
 
-##cat ${card} | sed -e "s#SEED#${seed}#g" | sed -e "s#NEVENTS#${nevt}#g" > powheg.input
 #cat powheg.input
 #if [[ -e ../pwhg_main-gnu ]]; then
 #  mv ../pwhg_main-gnu ../pwhg_main
@@ -370,6 +376,8 @@ rm -f ${WORKDIR}/${name}/powheg.input
 cd ${WORKDIR}
 
 echo 'Compiling finished...'
+
+cp -p ../runcms*.sh .
 
 if [ $jhugen = 1 ]; then
   cp -p ${cardj} .
@@ -386,21 +394,9 @@ fi
 
 chmod 755 runcmsgrid.sh
 
-
 ''')
-    f.write ('cp -p ' + powInputName + ' ' + rootfolder + '/' + folderName + '/powheg.input' + '\n')
-#    f.write ('cp -p ' + rootfolder + '/' + folderName + '/*.dat  ./' + '\n')
-
 
     f.close()
-
-
-    #runCommand ('bsub -J ' + jobID + ' -u pippopluto -q ' + QUEUE + ' < ' + jobname, 1, TESTING == 0)
-
-#    if QUEUE == '':
-#        print 'Direct running... #'+str(i)+' \n'
-#    else:
-#        print 'Submitting to queue: '+QUEUE+' #'+str(i)+' \n'
 
     if QUEUE == '':
         print 'Direct compiling... \n'
@@ -413,7 +409,7 @@ chmod 755 runcmsgrid.sh
     print "Source done..."
     #runCommand ('mv *.sh ' + folderName)
 
-    runCommand ('mv *.sh ' + folderName)
+    #runCommand ('cp -p runcms*.sh ' + folderName + '/.')
 
     return
 
@@ -427,6 +423,7 @@ def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag) :
     sedcommand = 'sed "s/parallelstage.*/parallelstage ' + parstage + '/ ; s/xgriditeration.*/xgriditeration 1/" ' + powInputName + ' > ./powheg.input'
     runCommand(sedcommand)
     runCommand('cp -p powheg.input ' + folderName)
+    runCommand('cp -p JHUGen.input ' + folderName)
     runCommand('mv powheg.input ' + folderName + '/powheg.input.' + parstage)
 
     for i in range (1, njobs + 1) :
@@ -472,7 +469,7 @@ if __name__ == "__main__":
 #    eosFolderName = sys.argv[6]
     
     parser = argparse.ArgumentParser (description = 'run phantom productions on lxplus')
-    parser.add_argument('-p', '--parstage'      , default= '0',            help='stage of the production process [1]')
+    parser.add_argument('-p', '--parstage'      , default= '0',            help='stage of the production process [0]')
     parser.add_argument('-x', '--xgrid'         , default= '1',            help='loop number for the girds production [1]')
     parser.add_argument('-f', '--folderName'    , default='testProd',      help='local folder and last eos folder name[testProd]')
     parser.add_argument('-e', '--eosFolder'     , default='NONE' ,         help='folder before the last one, on EOS')
@@ -525,6 +522,7 @@ if __name__ == "__main__":
     jobtag = args.parstage + '_' + args.xgrid
 
     if args.parstage == '0' :
+        #runCommand('cp -p JHUGen.input '+args.folderName+'/.')
         runGetSource(args.parstage, args.xgrid,
                      args.folderName, powInputName, args.prcName)
     elif args.parstage == '1' :
