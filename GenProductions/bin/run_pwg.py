@@ -165,7 +165,7 @@ def runSingleXgrid(parstage, xgrid, folderName, nEvents, powInputName, seed) :
 
     filename = folderName + '/run_Xgrid.sh'
 
-    f = open (filename, 'a')
+    f = open(filename, 'a')
     #f.write('./pwhg_main > run_Xgrid.log 2>&1' + '\n')
     f.write('./pwhg_main \n')
 
@@ -177,8 +177,8 @@ def runSingleXgrid(parstage, xgrid, folderName, nEvents, powInputName, seed) :
     if QUEUE == '':
         print 'Direct running... \n'
         #runCommand ('cd ' + folderName + '/; bash run_Xgrid.sh', TESTING == 0)
-        #os.system('bash run_Xgrid.sh >& run_Xgrid.log &')
-        print "Issue 'bash run_Xgrid.sh >& run_Xgrid.log &' to generate grid..."
+        os.system('cd '+folderName+';bash run_Xgrid.sh >& run_Xgrid.log &')
+        #print "Issue 'bash run_Xgrid.sh >& run_Xgrid.log &' to generate grid..."
         
     else:
         print 'Submitting to queue: '+QUEUE+' \n'
@@ -193,7 +193,7 @@ def runGetSource(parstage, xgrid, folderName, powInputName, process) :
 
     print 'Getting and compiling POWHEG source...'
 
-    prepareJob('source', '', '')
+    prepareJob('source', '', '.')
 
     filename = 'run_source.sh'
     f = open (filename, 'a')
@@ -425,8 +425,9 @@ chmod 755 runcmsgrid.sh
     if QUEUE == '':
         print 'Direct compiling... \n'
         #runCommand ('bash run_source.sh ', TESTING == 1)
-        #os.system('bash run_source.sh >& run.log &')
-        print "Issue 'bash run_source.sh >& run.log &' to compile powheg..."
+        os.system('bash run_source.sh >& run_source.log &')
+        #print "Issue 'bash run_source.sh >& run.log &' to compile powheg..."
+        
     else:
         print 'Submitting to queue: '+QUEUE+' \n'
         runCommand ('bsub -J ' + jobID + ' -u $USER -q ' + QUEUE + ' run_source.sh ', TESTING == 0)
@@ -461,10 +462,19 @@ def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag) :
         jobID = jobtag + '_' + str (i)
         #runCommand ('bsub -J ' + jobID + ' -u pippopluto -q ' + QUEUE + ' < ' + jobname, 1, TESTING == 0)
 
+        filename = folderName+'/run_' + tag + '.sh'
+        f = open (filename, 'a')
+        f.write('echo ' + str (i) + ' | ./pwhg_main > run_' + tag + '.log 2>&1' + '\n')
+        f.close()
+
+
         if QUEUE == '':
             print 'Direct running... #'+str(i)+' \n'
+            os.system('cd '+folderName+';bash run_'+tag+'.sh &')
+
         else:
             print 'Submitting to queue: '+QUEUE+' #'+str(i)+' \n'
+            runCommand ('cd '+folderName+';bsub -J ' + jobID + ' -u $USER -q ' + QUEUE + ' ' + folderName + '/run_'+tag+'.sh', TESTING == 0)
 
     #runCommand('mv *.sh ' + folderName)
 
@@ -479,10 +489,10 @@ def createTarBall(parstage, folderName, prcName) :
     runCommand('rm -rf ' + folderName + '_' + prcName + '.tgz')
 
     runCommand('cp -p ' + rootfolder + '/run_pwg.py ' + rootfolder + '/' + folderName + '/.')
-#    runCommand('cp -p ' + rootfolder + '/runcmsgrid*.sh ' + rootfolder + '/' + folderName + '/.')
+    runCommand('cp -p ' + rootfolder + '/runcmsgrid*.sh ' + rootfolder + '/' + folderName + '/.')
 
 #    runCommand('tar zcvf --exclude *.top --exclude *.lhe ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz pwhg_main *.input pwg*.dat')
-    runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude POWHEG-BOX --exclude powhegbox*.tar.gz --exclude *.top --exclude *.lhe --exclude *.log' , printIt = 0)
+    runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.top --exclude=*.lhe --exclude=run_*.sh --exclude=*.log' , printIt = 0)
 
     print 'Done.'
 
@@ -509,7 +519,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--totEvents'     , default= '10000',        help='total number of events to be generated [10000]')
     parser.add_argument('-n', '--numEvents'     , default= '2000',         help='number of events for a single job [2000]')
     parser.add_argument('-i', '--inputTemplate' , default= 'powheg.input', help='input cfg file (fixed) [=powheg.input]')
-    parser.add_argument('-q', '--lsfQueue'      , default= '',          help='LSF queue [2nw]')
+    parser.add_argument('-q', '--lsfQueue'      , default= '',          help='LSF queue [2nd]')
     parser.add_argument('-s', '--rndSeed'       , default= '42',           help='Starting random number seed [42]')
     parser.add_argument('-m', '--prcName'       , default= 'DMGG',           help='POWHEG process name [DMGG]')
 
