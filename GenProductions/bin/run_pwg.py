@@ -117,7 +117,7 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
 
     if(parstage == '1' and xgrid == '1') :
         if not 'parallelstage' in open(inputName).read() :
-            runCommand("echo \'parallelstage "+parstage+"\' >> "+inputName)
+            runCommand("echo \'\n\nparallelstage "+parstage+"\' >> "+inputName)
         if not 'xgriditeration' in open(inputName).read() :
             runCommand("echo \'xgriditeration "+xgrid+"\' >> "+inputName)
 
