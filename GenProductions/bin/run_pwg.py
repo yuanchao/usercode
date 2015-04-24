@@ -122,7 +122,7 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
             runCommand("echo \'xgriditeration "+xgrid+"\' >> "+inputName)
 
         if not 'manyseeds' in open(inputName).read() :
-            runCommand("echo \'manyseeds 1"+parstage+"\' >> "+ inputName)
+            runCommand("echo \'manyseeds 1\' >> "+ inputName)
 
         if not 'fakevirt' in open(inputName).read() :
             runCommand("echo \'fakevirt 1\' >> "+inputName)
