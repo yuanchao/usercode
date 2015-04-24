@@ -580,7 +580,7 @@ if __name__ == "__main__":
     if args.parstage == '0' :
         #runCommand('cp -p JHUGen.input '+args.folderName+'/.')
         runGetSource(args.parstage, args.xgrid, args.folderName,
-                     args.numEvents, powInputName, args.prcName)
+                     powInputName, args.prcName)
     elif args.parstage == '1' :
         runParallelXgrid(args.parstage, args.xgrid, args.folderName,
                          args.numEvents, njobs, powInputName, jobtag,
