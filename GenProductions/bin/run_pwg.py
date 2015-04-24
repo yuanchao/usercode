@@ -100,47 +100,54 @@ def prepareJobForEvents (tag, i, folderName, EOSfolder) :
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-def runParallelXgrid(parstage, xgrid, folderName, njobs, powInputName, jobtag) :
+def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, jobtag, rndSeed) :
     # parstage, xgrid are strings!
 
     print 'running jobs for grid'
     print folderName
 
-    runCommand('mv '+folderName +'/powheg.input '+folderName+'/powheg.input.temp')
+    inputName = folderName + "/powheg.input"
 
-    sedcommand = 'sed "s/parallelstage.*/parallelstage '+parstage+'/ ; s/xgriditeration.*/xgriditeration '+xgrid+'/" '+folderName+'/powheg.input.temp > ' + folderName + '/powheg.input'
+    runCommand('mv '+inputName+' '+inputName+'.temp')
+
+    sedcommand = 'sed "s/NEVENTS/' + nEvents + '/ ; s/SEED/'+rndSeed+'/ ; s/parallelstage.*/parallelstage '+parstage+'/ ; s/xgriditeration.*/xgriditeration '+xgrid+'/ ; s/fakevirt.*// " '+inputName+'.temp > ' + inputName
 
     #print sedcommand
     runCommand(sedcommand)
 
-    #runCommand ("echo \'parallelstage "+parstage+"\' >> "+folderName+"powheg.input")
-    #runCommand ("echo \'xgriditeration "+xgrid+"\' >> "+folderName+"powheg.input")
+    if(parstage == '1' and xgrid == '1') :
+        if not 'parallelstage' in open(inputName).read() :
+            runCommand("echo \'parallelstage "+parstage+"\' >> "+inputName)
+        if not 'xgriditeration' in open(inputName).read() :
+            runCommand("echo \'xgriditeration "+xgrid+"\' >> "+inputName)
 
-    if (parstage == '1' and xgrid == '1') :
-        runCommand ("echo >> "+folderName+"/powheg.input")
-        runCommand ("echo \'fakevirt 1\' >> "+folderName+"/powheg.input")
-        runCommand ("echo \'parallelstage "+parstage+"\' >> "+folderName+"/powheg.input")
-        runCommand ("echo \'xgriditeration "+xgrid+"\' >> "+folderName+"/powheg.input")
+        if not 'manyseeds' in open(inputName).read() :
+            runCommand("echo \'manyseeds 1"+parstage+"\' >> "+ inputName)
+
+        if not 'fakevirt' in open(inputName).read() :
+            runCommand("echo \'fakevirt 1\' >> "+inputName)
+
     #runCommand('cp -p powheg.input ' + folderName)
 
-    runCommand('cp -p ' + folderName + '/powheg.input ' + folderName + '/powheg.input.' + parstage + '_' + str (xgrid))
+    runCommand('cp -p '+inputName+' '+inputName+'.'+parstage+'_'+str(xgrid))
 
     for i in range (1, njobs + 1) :
-        tag = jobtag + '_' + str(i)
-        jobname = prepareJob(tag, i, folderName)
         jobID = jobtag + '_' + str(i)
+        jobname = prepareJob(jobID, i, folderName)
 
-        filename = folderName+'/run_' + tag + '.sh'
-        f = open (filename, 'a')
-        f.write('echo ' + str (i) + ' | ./pwhg_main > run_' + tag + '.log 2>&1' + '\n')
+        filename = folderName+'/run_' + jobID + '.sh'
+        f = open(filename, 'a')
+        f.write('echo ' + str (i) + ' | ./pwhg_main > run_' + jobID + '.log 2>&1' + '\n')
         f.close()
 
         #runCommand('bsub -J ' + jobID + ' -u pippopluto -q ' + QUEUE + ' < ' + jobname, 1, TESTING == 0)
 
         if QUEUE == '':
             print 'Direct running... #'+str(i)+' \n'
+            os.system('cd '+folderName+';bash run_'+jobID+'.sh &')
         else:
             print 'Submitting to queue: '+QUEUE+' #'+str(i)+' \n'
+            runCommand ('bsub -J ' + jobID + ' -u $USER -q ' + QUEUE + ' ' + folderName + '/run_'+jobID+'.sh ', TESTING == 0)
 
 
     #runCommand ('mv *.sh ' + folderName)
@@ -492,7 +499,7 @@ def createTarBall(parstage, folderName, prcName) :
     runCommand('cp -p ' + rootfolder + '/runcmsgrid*.sh ' + rootfolder + '/' + folderName + '/.')
 
 #    runCommand('tar zcvf --exclude *.top --exclude *.lhe ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz pwhg_main *.input pwg*.dat')
-    runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.top --exclude=*.lhe --exclude=run_*.sh --exclude=*.log' , printIt = 0)
+    runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.top --exclude=*.lhe --exclude=run_*.sh --exclude=*.log --exclude=*temp' , printIt = 0)
 
     print 'Done.'
 
@@ -572,11 +579,12 @@ if __name__ == "__main__":
 
     if args.parstage == '0' :
         #runCommand('cp -p JHUGen.input '+args.folderName+'/.')
-        runGetSource(args.parstage, args.xgrid,
-                     args.folderName, powInputName, args.prcName)
+        runGetSource(args.parstage, args.xgrid, args.folderName,
+                     args.numEvents, powInputName, args.prcName)
     elif args.parstage == '1' :
-        runParallelXgrid(args.parstage, args.xgrid,
-                     args.folderName, njobs, powInputName, jobtag)
+        runParallelXgrid(args.parstage, args.xgrid, args.folderName,
+                         args.numEvents, njobs, powInputName, jobtag,
+                         args.rndSeed)
     elif args.parstage == '123' :
         runSingleXgrid(args.parstage, args.xgrid, args.folderName,
                        args.numEvents, powInputName, args.rndSeed)
