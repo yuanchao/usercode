@@ -275,12 +275,11 @@ cd POWHEG-BOX/${process}
 mkdir -p include
 
 # Use dynamic linking and lhapdf
-mv Makefile Makefile.orig
-cat Makefile.orig | sed -e "s#STATIC[ \t]*=[ \t]*-static#STATIC=-dynamic#g" | sed -e "s#PDF[ \t]*=[ \t]*native#PDF=lhapdf#g" > Makefile
+sed -i -e "s#STATIC[ \t]*=[ \t]*-static#STATIC=-dynamic#g" Makefile
+sed -i -e "s#PDF[ \t]*=[ \t]*native#PDF=lhapdf#g" Makefile
 
 # Use gfortran, not other compilers which are not free/licensed
-mv Makefile Makefile.interm
-cat Makefile.interm | sed -e "s#COMPILER[ \t]*=[ \t]*ifort#COMPILER=gfortran#g" > Makefile
+sed -i -e "s#COMPILER[ \t]*=[ \t]*ifort#COMPILER=gfortran#g" Makefile
 
 # Find proper histo booking routine (two of them exist)
 BOOK_HISTO="pwhg_bookhist-multi.o"
@@ -291,8 +290,7 @@ if [ "$process" = "trijet" ]; then
    BOOK_HISTO+=" observables.o"
 fi  
 if [ "$process" = "VBF_HJJJ" ]; then 
-  mv pwhg_analysis-dummy.f pwhg_analysis-dummy.f.orig
-  sed 's/..\/pwhg_book.h/pwhg_book.h/g' pwhg_analysis-dummy.f.orig > pwhg_analysis-dummy.f
+  sed -i 's/..\/pwhg_book.h/pwhg_book.h/g' pwhg_analysis-dummy.f
 fi  
 if [ "$process" = "VBF_H" ]; then 
   sed -i '/pwhginihist/d' pwhg_analysis-dummy.f 
@@ -302,17 +300,22 @@ fi
 if [ `grep particle_identif pwhg_analysis-dummy.f` = ""]; then
    cp ../pwhg_analysis-dummy.f .
 fi
-mv Makefile Makefile.interm
-cat Makefile.interm | sed -e "s#PWHGANAL[ \t]*=[ \t]*#\#PWHGANAL=#g" | sed -e "s#ANALYSIS[ \t]*=[ \t]*#\#ANALYSIS=#g" | sed -e "s#LHAPDF_CONFIG[ \t]*=[ \t]*#\#LHAPDF_CONFIG=#g" > Makefile
-mv Makefile Makefile.interm
-cat Makefile.interm | sed -e "s#pwhg_bookhist.o# #g" | sed -e "s#pwhg_bookhist-new.o# #g" | sed -e "s#pwhg_bookhist-multi.o# #g" > Makefile
+sed -i -e "s#PWHGANAL[ \t]*=[ \t]*#\#PWHGANAL=#g" Makefile
+sed -i -e "s#ANALYSIS[ \t]*=[ \t]*#\#ANALYSIS=#g" Makefile
+sed -i -e "s#LHAPDF_CONFIG[ \t]*=[ \t]*#\#LHAPDF_CONFIG=#g" Makefile
+sed -i -e "s#pwhg_bookhist.o# #g" Makefile
+sed -i -e "s#pwhg_bookhist-new.o# #g" Makefile
+sed -i -e "s#pwhg_bookhist-multi.o# #g" Makefile
 if [ "$process" = "ttJ" ]; then
-  mv Makefile Makefile.interm
-  cat Makefile.interm | sed -e "s#_PATH) -L#_PATH) #g" | sed -e "s# -lvirtual#/libvirtual.so.1.0.0#g" > Makefile
+  sed -i -e "s#_PATH) -L#_PATH) #g" Makefile
+  sed -i -e "s# -lvirtual#/libvirtual.so.1.0.0#g" Makefile
+fi
+if [ "$process" = "ttH" ]; then
+  sed -i 's/O2/O0/g' Makefile
+  sed -i 's/4.5d0/4.75d0/g' init_couplings.f
 fi
 if [ "$process" = "gg_H_MSSM" ]; then 
-  mv nloreal.F nloreal.F.orig
-  sed 's/leq/le/g' nloreal.F.orig > nloreal.F
+  sed -i 's/leq/le/g' nloreal.F
   cp -p ../gg_H_quark-mass-effects/SLHA.h .
   cp -p ../gg_H_quark-mass-effects/SLHADefs.h .
 fi  
@@ -333,8 +336,7 @@ if [ $jhugen = 1 ]; then
 
   tar xzf JHUGenerator.${jhugenversion}.tar.gz
   cd JHUGenerator
-  mv makefile makefile.interm
-  cat makefile.interm | sed -e "s#Comp = ifort#Comp = gfort#g" > makefile
+  sed -i -e "s#Comp = ifort#Comp = gfort#g" makefile
   make
   cd ..
 fi
