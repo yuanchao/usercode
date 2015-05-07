@@ -108,9 +108,7 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
 
     inputName = folderName + "/powheg.input"
 
-    runCommand('mv '+inputName+' '+inputName+'.temp')
-
-    sedcommand = 'sed "s/NEVENTS/' + nEvents + '/ ; s/SEED/'+rndSeed+'/ ; s/parallelstage.*/parallelstage '+parstage+'/ ; s/xgriditeration.*/xgriditeration '+xgrid+'/ ; s/fakevirt.*// " '+inputName+'.temp > ' + inputName
+    sedcommand = 'sed -i "s/NEVENTS/' + nEvents + '/ ; s/SEED/'+rndSeed+'/ ; s/parallelstage.*/parallelstage '+parstage+'/ ; s/xgriditeration.*/xgriditeration '+xgrid+'/ ; s/fakevirt.*// " '+inputName
 
     #print sedcommand
     runCommand(sedcommand)
@@ -157,9 +155,11 @@ def runParallelXgrid(parstage, xgrid, folderName, nEvents, njobs, powInputName, 
 def runSingleXgrid(parstage, xgrid, folderName, nEvents, powInputName, seed) :
 
     print 'Running single job for Xgrid'
+    print folderName
 
-    runCommand('mv -f powheg.input powheg.input.temp')
+    inputName = folderName + "/powheg.input"
 
+#    runCommand('mv -f powheg.input powheg.input.temp')
 #    sedcommand = 'sed "s/parallelstage.*/parallelstage ' + parstage + '/ ; s/xgriditeration.*/xgriditeration ' + xgrid + '/" ' + powInputName + ' > ' + folderName + '/powheg.input'
     sedcommand = 'sed "s/NEVENTS/' + nEvents + '/ ; s/SEED/' + seed + '/" ' + powInputName + ' > ' + folderName + '/powheg.input'
 
@@ -241,8 +241,7 @@ export PATH=`pwd`:${PATH}
 cp -p ../${cardInput} powheg.input
 cp -p ../JHUGen.input JHUGen.input
 
-mv powheg.input powheg.input.temp
-cat powheg.input.temp | sed -e "s#--#-#g" > powheg.input
+sed -i -e "s#--#-#g" powheg.input
 
 myDir=`pwd`
 card=${myDir}/powheg.input
@@ -455,8 +454,7 @@ chmod 755 runcmsgrid.sh
 def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag) :
     print 'run : submitting jobs'
     #runCommand('rm -f ' + folderName + 'powheg.input')
-    runCommand('mv '+folderName +'/powheg.input '+folderName+'/powheg.input.temp')
-    sedcommand = 'sed "s/parallelstage.*/parallelstage ' + parstage + '/ ; s/xgriditeration.*/xgriditeration 1/" '+folderName+'/powheg.input.temp > ' + folderName + '/powheg.input'
+    sedcommand = 'sed -i "s/parallelstage.*/parallelstage ' + parstage + '/ ; s/xgriditeration.*/xgriditeration 1/" '+folderName+'/powheg.input'
 
     runCommand(sedcommand)
     #runCommand('cp -p powheg.input ' + folderName)
@@ -490,7 +488,7 @@ def runEvents(parstage, folderName, EOSfolder, njobs, powInputName, jobtag) :
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-def createTarBall(parstage, folderName, prcName) :
+def createTarBall(parstage, folderName, prcName, keepTop) :
     print 'Creating tarball distribution for ' + args.folderName + '_' + prcName
     print
 
@@ -500,9 +498,14 @@ def createTarBall(parstage, folderName, prcName) :
     runCommand('cp -p ' + rootfolder + '/run_pwg.py ' + rootfolder + '/' + folderName + '/.')
     runCommand('cp -p ' + rootfolder + '/runcmsgrid*.sh ' + rootfolder + '/' + folderName + '/.')
 
-#    runCommand('tar zcvf --exclude *.top --exclude *.lhe ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz pwhg_main *.input pwg*.dat')
-    runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.top --exclude=*.lhe --exclude=run_*.sh --exclude=*.log --exclude=*temp' , printIt = 0)
+    if keepTop == '1' :
+      print 'Keeping validation plots.'
+      print
+      runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.lhe --exclude=run_*.sh --exclude=*.log --exclude=*temp', printIt = 1)
+    else :
+      runCommand('tar zcvf ' + rootfolder + '/' + folderName + '_' + prcName + '.tgz ' + folderName +' --exclude=POWHEG-BOX --exclude=powhegbox*.tar.gz --exclude=*.top --exclude=*.lhe --exclude=run_*.sh --exclude=*.log --exclude=*temp', printIt = 1)
 
+    print
     print 'Done.'
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -531,6 +534,7 @@ if __name__ == "__main__":
     parser.add_argument('-q', '--lsfQueue'      , default= '',          help='LSF queue [2nd]')
     parser.add_argument('-s', '--rndSeed'       , default= '42',           help='Starting random number seed [42]')
     parser.add_argument('-m', '--prcName'       , default= 'DMGG',           help='POWHEG process name [DMGG]')
+    parser.add_argument('-k', '--keepTop'       , default= '0',           help='Keep the validation top draw plots [0]')
 
     args = parser.parse_args ()
     
@@ -595,7 +599,8 @@ if __name__ == "__main__":
                        args.numEvents, powInputName, args.rndSeed)
         createTarBall(args.parstage, args.folderName, args.prcName)
     elif args.parstage == '9' :
-        createTarBall(args.parstage, args.folderName, args.prcName)
+        createTarBall(args.parstage, args.folderName, args.prcName,
+                      args.keepTop)
     else                    :
         runEvents(args.parstage, args.folderName,
                   args.eosFolder + '/' + EOSfolder, njobs, powInputName, jobtag)
