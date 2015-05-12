@@ -337,6 +337,8 @@ if [ $jhugen = 1 ]; then
   cd JHUGenerator
   sed -i -e "s#Comp = ifort#Comp = gfort#g" makefile
   make
+  mkdir -p ${WORKDIR}/${name}
+  cp -p JHUGen ${WORKDIR}/${name}/.
   cd ..
 fi
 if [ "$process" = "gg_H_2HDM" ] || [ "$process" = "gg_H_MSSM" ]; then
