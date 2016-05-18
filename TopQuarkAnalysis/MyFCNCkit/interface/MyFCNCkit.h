@@ -30,13 +30,13 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#define MAX_LEPTONS     128
-#define MAX_JETS        64
+#define MAX_LEPTONS     256
+#define MAX_JETS        128
 #define MAX_GENPARTS    128
-#define MAX_BX          16
-#define MAX_VERTEX      64
+#define MAX_BX          128
+#define MAX_VERTEX      256 
 
-#define N_TRIGGER_BOOKINGS      3648
+#define N_TRIGGER_BOOKINGS      5929
 
 #include "TopQuarkAnalysis/MyFCNCkit/interface/TriggerBooking.h"
 
@@ -81,10 +81,13 @@ public:
   // PU
   int nBX;
   int nPU[MAX_BX];
+  int nTPU[MAX_BX];
   int BXPU[MAX_BX];
 
   float METx;
   float METy;
+
+  float rhoIso;
 
   int   TrgCount;   // No. of fired booking bits
   char  TrgBook[N_TRIGGER_BOOKINGS];// Trigger bits, reserved up to 120 entries
@@ -113,6 +116,8 @@ public:
     root->Branch("EvtInfo.PDFv1"       , &PDFv1           , "EvtInfo.PDFv1/F"          );
     root->Branch("EvtInfo.PDFv2"       , &PDFv2           , "EvtInfo.PDFv2/F"          );           
     root->Branch("EvtInfo.MET"         , &MET             , "EvtInfo.MET/F"            );
+    root->Branch("EvtInfo.METx"        , &METx            , "EvtInfo.METx/F"            );
+    root->Branch("EvtInfo.METy"        , &METy            , "EvtInfo.METy/F"            );
     root->Branch("EvtInfo.METPhi"      , &METPhi          , "EvtInfo.METPhi/F"         );
     root->Branch("EvtInfo.RawMET"      , &RawMET          , "EvtInfo.RawMET/F"         );
     root->Branch("EvtInfo.RawMETPhi"   , &RawMETPhi       , "EvtInfo.RawMETPhi/F"      );
@@ -128,7 +133,9 @@ public:
     root->Branch("EvtInfo.HLTbits"     , HLTbits               , "EvtInfo.HLTbits[EvtInfo.nHLT]/O");
     root->Branch("EvtInfo.nBX"         , &nBX                  , "EvtInfo.nBX/I");
     root->Branch("EvtInfo.nPU"         , nPU               , "EvtInfo.nPU[EvtInfo.nBX]/I");
+    root->Branch("EvtInfo.nTPU"        , nTPU              , "EvtInfo.nTPU[EvtInfo.nBX]/I");
     root->Branch("EvtInfo.BXPU"        , BXPU              , "EvtInfo.BXPU[EvtInfo.nBX]/I");
+    root->Branch("EvtInfo.rhoIso"      , &rhoIso           , "EvtInfo.rhoIso/F");
   }
     
 };
@@ -155,6 +162,14 @@ public:
   float chargedIso[MAX_LEPTONS];
   float neutralIso[MAX_LEPTONS];
   float photonIso[MAX_LEPTONS];
+  float puChIso[MAX_LEPTONS];
+  float chAllIso[MAX_LEPTONS];
+  float AllIso[MAX_LEPTONS];
+  float AEff03[MAX_LEPTONS];
+  float ChargedHadronIsoR04[MAX_LEPTONS]; 
+  float NeutralHadronIsoR04[MAX_LEPTONS]; 
+  float PhotonIsoR04[MAX_LEPTONS];        
+  float sumPUPtR04[MAX_LEPTONS];          
   float CaloEnergy[MAX_LEPTONS];
   float e1x5[MAX_LEPTONS];
   float e2x5Max[MAX_LEPTONS];
@@ -171,7 +186,8 @@ public:
   float ElTrackDxy_BS[MAX_LEPTONS];  
   float ElTrackDxy_PV[MAX_LEPTONS];  
   float ElTrackDxy_PVBS[MAX_LEPTONS]; //yjlei
-  
+
+/*  
   float simpleEleId95relIso[MAX_LEPTONS]; // Add by Jacky
   float simpleEleId90relIso[MAX_LEPTONS]; // Add by Jacky
   float simpleEleId85relIso[MAX_LEPTONS]; // Add by Jacky
@@ -184,7 +200,8 @@ public:
   float simpleEleId80cIso[MAX_LEPTONS]; // Add by Jacky
   float simpleEleId70cIso[MAX_LEPTONS]; // Add by Jacky
   float simpleEleId60cIso[MAX_LEPTONS]; // Add by Jacky
-
+*/
+/*
   // CIC without ISO
   int eidVeryLoose[MAX_LEPTONS];
   int eidLoose[MAX_LEPTONS];
@@ -195,7 +212,9 @@ public:
   int eidHyperTight2[MAX_LEPTONS];
   int eidHyperTight3[MAX_LEPTONS];
   int eidHyperTight4[MAX_LEPTONS];
+*/
   // CIC with ISO
+
   int eidVeryLooseMC[MAX_LEPTONS];
   int eidLooseMC[MAX_LEPTONS];
   int eidMediumMC[MAX_LEPTONS];
@@ -205,6 +224,7 @@ public:
   int eidHyperTight2MC[MAX_LEPTONS];
   int eidHyperTight3MC[MAX_LEPTONS];
   int eidHyperTight4MC[MAX_LEPTONS];
+
   
   // For CIC        
   float dcotdist[MAX_LEPTONS];
@@ -247,6 +267,25 @@ public:
   float TrgPhi[MAX_LEPTONS];
   int TrgID[MAX_LEPTONS];
 
+//YH 2012-08-15
+  // Electrons
+  bool ElepassConversionVeto[MAX_LEPTONS];
+  float ElesuperClusterEta[MAX_LEPTONS];
+  float ElemvaTrigV0[MAX_LEPTONS];
+  float ElemvaNTrigV0[MAX_LEPTONS];
+  float EletrackMomentumAtVtxp[MAX_LEPTONS];
+  float EleecalEnergy[MAX_LEPTONS];
+  float EleeSuperClusterOverP[MAX_LEPTONS];
+  float Elefbrem[MAX_LEPTONS];
+  float EleHoverE[MAX_LEPTONS];
+  float ElesigmaIetaIeta[MAX_LEPTONS];
+  float EledeltaPhiVtx[MAX_LEPTONS];
+  float EledeltaEtaVtx[MAX_LEPTONS];
+  int EleExpnumberOfHits[MAX_LEPTONS];
+  //Muons
+  int MuTrackerLayersWithMeasurement[MAX_LEPTONS];
+  int MunumberOfMatchedStations[MAX_LEPTONS];
+
   void setBranch(TTree *root){
     root->Branch("Leptons.Size"               , &Size                     , "Leptons.Size/I");
     root->Branch("Leptons.Index"              , Index                     , "Leptons.Index[Leptons.Size]/I");
@@ -272,6 +311,14 @@ public:
     root->Branch("Leptons.chargedIso"         , chargedIso                , "Leptons.chargedIso[Leptons.Size]/F");
     root->Branch("Leptons.neutralIso"         , neutralIso                , "Leptons.neutralIso[Leptons.Size]/F");
     root->Branch("Leptons.photonIso"          , photonIso                 , "Leptons.photonIso[Leptons.Size]/F");
+    root->Branch("Leptons.puChIso"            , puChIso                   , "Leptons.puChIso[Leptons.Size]/F");
+    root->Branch("Leptons.chAllIso"           , chAllIso                  , "Leptons.chAllIso[Leptons.Size]/F");
+    root->Branch("Leptons.AllIso"             , AllIso                    , "Leptons.AllIso[Leptons.Size]/F");
+    root->Branch("Leptons.AEff03"             , AEff03                    , "Leptons.AEff03[Leptons.Size]/F");
+    root->Branch("Leptons.ChargedHadronIsoR04", ChargedHadronIsoR04       , "Leptons.ChargedHadronIsoR04[Leptons.Size]/F");
+    root->Branch("Leptons.NeutralHadronIsoR04", NeutralHadronIsoR04       , "Leptons.NeutralHadronIsoR04[Leptons.Size]/F");
+    root->Branch("Leptons.PhotonIsoR04"       , PhotonIsoR04              , "Leptons.PhotonIsoR04[Leptons.Size]/F");
+    root->Branch("Leptons.sumPUPtR04"         , sumPUPtR04                , "Leptons.sumPUPtR04[Leptons.Size]/F");
 
     root->Branch("Leptons.Px"                 , Px                     , "Leptons.Px[Leptons.Size]/F"); //Uly 2011-04-04
     root->Branch("Leptons.Py"                 , Py                     , "Leptons.Py[Leptons.Size]/F"); //Uly 2011-04-04
@@ -285,6 +332,7 @@ public:
     root->Branch("Leptons.ElTrackDxy_PV",   ElTrackDxy_PV  , "Leptons.ElTrackDxy_PV[Leptons.Size]/F");
     root->Branch("Leptons.ElTrackDxy_PVBS", ElTrackDxy_PVBS, "Leptons.ElTrackDxy_PVBS[Leptons.Size]/F");
 
+/*
     root->Branch("Leptons.simpleEleId95relIso"    , simpleEleId95relIso , "Leptons.simpleEleId95relIso[Leptons.Size]/F");
     root->Branch("Leptons.simpleEleId90relIso"    , simpleEleId90relIso , "Leptons.simpleEleId90relIso[Leptons.Size]/F");
     root->Branch("Leptons.simpleEleId85relIso"    , simpleEleId85relIso , "Leptons.simpleEleId85relIso[Leptons.Size]/F");
@@ -307,7 +355,7 @@ public:
     root->Branch("Leptons.eidHyperTight2", eidHyperTight2    , "Leptons.eidHyperTight2[Leptons.Size]/I");
     root->Branch("Leptons.eidHyperTight3", eidHyperTight3    , "Leptons.eidHyperTight3[Leptons.Size]/I");
     root->Branch("Leptons.eidHyperTight4", eidHyperTight4    , "Leptons.eidHyperTight4[Leptons.Size]/I");
-    
+*/    
     root->Branch("Leptons.eidVeryLooseMC", eidVeryLooseMC    , "Leptons.eidVeryLooseMC[Leptons.Size]/I");
     root->Branch("Leptons.eidLooseMC", eidLooseMC            , "Leptons.eidLooseMC[Leptons.Size]/I");
     root->Branch("Leptons.eidMediumMC", eidMediumMC          , "Leptons.eidMediumMC[Leptons.Size]/I");
@@ -351,6 +399,22 @@ public:
     root->Branch("Leptons.TrgPhi"    , TrgPhi   , "Leptons.TrgPhi[Leptons.Size]/F");
     root->Branch("Leptons.TrgID"     , TrgID    , "Leptons.TrgID[Leptons.Size]/I" );
    
+//YH 2012-08-15
+    root->Branch("Leptons.ElepassConversionVeto" ,ElepassConversionVeto , "Leptons.ElepassConversionVeto[Leptons.Size]/O" );
+    root->Branch("Leptons.ElesuperClusterEta"    ,ElesuperClusterEta    , "Leptons.ElesuperClusterEta[Leptons.Size]/F" );
+    root->Branch("Leptons.ElemvaTrigV0"          ,ElemvaTrigV0          , "Leptons.ElemvaTrigV0[Leptons.Size]/F" );
+    root->Branch("Leptons.ElemvaNTrigV0"         ,ElemvaNTrigV0         , "Leptons.ElemvaNTrigV0[Leptons.Size]/F" );
+    root->Branch("Leptons.EletrackMomentumAtVtxp",EletrackMomentumAtVtxp, "Leptons.EletrackMomentumAtVtxp[Leptons.Size]/F" );
+    root->Branch("Leptons.EleecalEnergy"         ,EleecalEnergy         , "Leptons.EleecalEnergy[Leptons.Size]/F" );
+    root->Branch("Leptons.EleeSuperClusterOverP" ,EleeSuperClusterOverP , "Leptons.EleeSuperClusterOverP[Leptons.Size]/F" );
+    root->Branch("Leptons.Elefbrem"              ,Elefbrem              , "Leptons.Elefbrem[Leptons.Size]/F" );
+    root->Branch("Leptons.EleHoverE"             ,EleHoverE             , "Leptons.EleHoverE[Leptons.Size]/F" );
+    root->Branch("Leptons.ElesigmaIetaIeta"      ,ElesigmaIetaIeta      , "Leptons.ElesigmaIetaIeta[Leptons.Size]/F");
+    root->Branch("Leptons.EledeltaPhiVtx"        ,EledeltaPhiVtx        , "Leptons.EledeltaPhiVtx[Leptons.Size]/F");
+    root->Branch("Leptons.EledeltaEtaVtx"        ,EledeltaEtaVtx        , "Leptons.EledeltaEtaVtx[Leptons.Size]/F");
+    root->Branch("Leptons.EleExpnumberOfHits"    ,EleExpnumberOfHits    , "Leptons.EleExpnumberOfHits[Leptons.Size]/I");
+    root->Branch("Leptons.MuTrackerLayersWithMeasurement"    ,MuTrackerLayersWithMeasurement   , "Leptons.MuTrackerLayersWithMeasurement[Leptons.Size]/I");
+    root->Branch("Leptons.MunumberOfMatchedStations"         ,MunumberOfMatchedStations        , "Leptons.MunumberOfMatchedStations[Leptons.Size]/I");
   }
 };
 
@@ -377,6 +441,10 @@ public:
   float PtCorrL7uds[MAX_JETS];
   float PtCorrL7c[MAX_JETS];  
   float PtCorrL7b[MAX_JETS];  
+  float ECorrL7g[MAX_JETS];
+  float ECorrL7uds[MAX_JETS];
+  float ECorrL7c[MAX_JETS];
+  float ECorrL7b[MAX_JETS];
   float JetBProbBJetTags[MAX_JETS];
   float JetProbBJetTags[MAX_JETS];
   float TrackCountHiPurBJetTags[MAX_JETS];  
@@ -429,7 +497,11 @@ public:
     root->Branch("Jets.PtCorrL7g"   , PtCorrL7g, "Jets.PtCorrL7g[Jets.Size]/F");
     root->Branch("Jets.PtCorrL7uds" , PtCorrL7uds   , "Jets.PtCorrL7uds[Jets.Size]/F"); 
     root->Branch("Jets.PtCorrL7c"   , PtCorrL7c, "Jets.PtCorrL7c[Jets.Size]/F"); 
-    root->Branch("Jets.PtCorrL7b"   , PtCorrL7b, "Jets.PtCorrL7b[Jets.Size]/F"); 
+    root->Branch("Jets.PtCorrL7b"   , PtCorrL7b, "Jets.PtCorrL7b[Jets.Size]/F");
+    root->Branch("Jets.ECorrL7g"   , ECorrL7g, "Jets.ECorrL7g[Jets.Size]/F");
+    root->Branch("Jets.ECorrL7uds" , ECorrL7uds   , "Jets.ECorrL7uds[Jets.Size]/F");
+    root->Branch("Jets.ECorrL7c"   , ECorrL7c, "Jets.ECorrL7c[Jets.Size]/F");
+    root->Branch("Jets.ECorrL7b"   , ECorrL7b, "Jets.ECorrL7b[Jets.Size]/F");
     root->Branch("Jets.JetBProbBJetTags"   , JetBProbBJetTags  , "Jets.JetBProbBJetTags[Jets.Size]/F");
     root->Branch("Jets.JetProbBJetTags"    , JetProbBJetTags   , "Jets.JetProbBJetTags[Jets.Size]/F");
     root->Branch("Jets.TrackCountHiPurBJetTags" ,TrackCountHiPurBJetTags , "Jets.TrackCountHiPurBJetTags[Jets.Size]/F"); 
@@ -559,6 +631,7 @@ class MyFCNCkit : public edm::EDAnalyzer {
       VtxInfoClass VtxInfo;
 
       bool MCflag;
+      bool m_use_conddb;
 
       edm::InputTag muonlabel_;
       edm::InputTag eleclabel_;
@@ -573,7 +646,7 @@ class MyFCNCkit : public edm::EDAnalyzer {
       edm::InputTag genevtlabel_;
       edm::InputTag gtdigilabel_;
       edm::InputTag puInfoLabel_;
-
+      edm::InputTag rhoIsoLabel_;
 
 };
 
